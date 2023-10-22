@@ -28,6 +28,9 @@ import java.io.OutputStream;
 
 import static org.apache.dubbo.common.serialize.Constants.NATIVE_HESSIAN_SERIALIZATION_ID;
 
+/**
+ * native-hessian序列化算法
+ */
 public class Hessian2Serialization implements Serialization {
 
     @Override

@@ -28,11 +28,7 @@ import java.io.OutputStream;
 import static org.apache.dubbo.common.serialize.Constants.HESSIAN2_SERIALIZATION_ID;
 
 /**
- * Hessian2 serialization implementation, hessian2 is the default serialization protocol for dubbo
- *
- * <pre>
- *     e.g. &lt;dubbo:protocol serialization="hessian2" /&gt;
- * </pre>
+ * hessian2序列化算法
  */
 public class Hessian2Serialization implements Serialization {
 

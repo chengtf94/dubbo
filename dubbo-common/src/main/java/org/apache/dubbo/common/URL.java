@@ -1,19 +1,3 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.config.Configuration;
@@ -62,58 +46,32 @@ import static org.apache.dubbo.common.convert.Converter.convertIfPossible;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 
 /**
- * URL - Uniform Resource Locator (Immutable, ThreadSafe)
- * <p>
- * url example:
- * <ul>
- * <li>http://www.facebook.com/friends?param1=value1&amp;param2=value2
- * <li>http://username:password@10.20.130.230:8080/list?version=1.0.0
- * <li>ftp://username:password@192.168.1.7:21/1/read.txt
- * <li>registry://192.168.1.7:9090/org.apache.dubbo.service1?param1=value1&amp;param2=value2
- * </ul>
- * <p>
- * Some strange example below:
- * <ul>
- * <li>192.168.1.3:20880<br>
- * for this case, url protocol = null, url host = 192.168.1.3, port = 20880, url path = null
- * <li>file:///home/user1/router.js?type=script<br>
- * for this case, url protocol = file, url host = null, url path = home/user1/router.js
- * <li>file://home/user1/router.js?type=script<br>
- * for this case, url protocol = file, url host = home, url path = user1/router.js
- * <li>file:///D:/1/router.js?type=script<br>
- * for this case, url protocol = file, url host = null, url path = D:/1/router.js
- * <li>file:/D:/1/router.js?type=script<br>
- * same as above file:///D:/1/router.js?type=script
- * <li>/home/user1/router.js?type=script <br>
- * for this case, url protocol = null, url host = null, url path = home/user1/router.js
- * <li>home/user1/router.js?type=script <br>
- * for this case, url protocol = null, url host = home, url path = user1/router.js
- * </ul>
+ * URL - Uniform Resource Locator (Immutable, ThreadSafe)：配置总线
  *
  * @see java.net.URL
  * @see java.net.URI
  */
-public /*final**/
-class URL implements Serializable {
-
+public class URL implements Serializable {
     private static final long serialVersionUID = -1985165475234910535L;
 
+    /** 协议：dubbo */
     protected String protocol;
 
+    /** 用户名、密码 */
     protected String username;
-
     protected String password;
 
-    // by default, host to registry
+    /** 主机、端口 */
     protected String host;
-
-    // by default, port to registry
     protected int port;
 
+    /** 路径：org.apache.dubbo.demo.DemoService */
     protected String path;
 
+    /** 参数键值对 */
     private final Map<String, String> parameters;
 
+    /** 方法参数键值对 */
     private final Map<String, Map<String, String>> methodParameters;
 
     // ==== cache ====
@@ -139,6 +97,7 @@ class URL implements Serializable {
 
     private transient String address;
 
+    /** 协构造方法 */
     protected URL() {
         this.protocol = null;
         this.username = null;
@@ -150,64 +109,40 @@ class URL implements Serializable {
         this.parameters = null;
         this.methodParameters = null;
     }
-
     public URL(String protocol, String host, int port) {
         this(protocol, null, null, host, port, null, (Map<String, String>) null);
     }
-
     public URL(String protocol, String host, int port, String[] pairs) { // varargs ... conflict with the following path argument, use array instead.
         this(protocol, null, null, host, port, null, CollectionUtils.toStringMap(pairs));
     }
-
     public URL(String protocol, String host, int port, Map<String, String> parameters) {
         this(protocol, null, null, host, port, null, parameters);
     }
-
     public URL(String protocol, String host, int port, String path) {
         this(protocol, null, null, host, port, path, (Map<String, String>) null);
     }
-
     public URL(String protocol, String host, int port, String path, String... pairs) {
         this(protocol, null, null, host, port, path, CollectionUtils.toStringMap(pairs));
     }
-
     public URL(String protocol, String host, int port, String path, Map<String, String> parameters) {
         this(protocol, null, null, host, port, path, parameters);
     }
-
     public URL(String protocol, String username, String password, String host, int port, String path) {
         this(protocol, username, password, host, port, path, (Map<String, String>) null);
     }
-
     public URL(String protocol, String username, String password, String host, int port, String path, String... pairs) {
         this(protocol, username, password, host, port, path, CollectionUtils.toStringMap(pairs));
     }
-
-    public URL(String protocol,
-               String username,
-               String password,
-               String host,
-               int port,
-               String path,
-               Map<String, String> parameters) {
+    public URL(String protocol, String username, String password, String host, int port, String path, Map<String, String> parameters) {
         this(protocol, username, password, host, port, path, parameters, toMethodParameters(parameters));
     }
-
-    public URL(String protocol,
-               String username,
-               String password,
-               String host,
-               int port,
-               String path,
-               Map<String, String> parameters,
-               Map<String, Map<String, String>> methodParameters) {
+    public URL(String protocol, String username, String password, String host, int port, String path, Map<String, String> parameters, Map<String, Map<String, String>> methodParameters) {
         this.protocol = protocol;
         this.username = username;
         this.password = password;
         this.host = host;
         this.port = Math.max(port, 0);
         this.address = getAddress(this.host, this.port);
-
         // trim the beginning "/"
         while (path != null && path.startsWith("/")) {
             path = path.substring(1);
@@ -221,7 +156,6 @@ class URL implements Serializable {
         this.parameters = Collections.unmodifiableMap(parameters);
         this.methodParameters = Collections.unmodifiableMap(methodParameters);
     }
-
     private static String getAddress(String host, int port) {
         return port <= 0 ? host : host + ':' + port;
     }
